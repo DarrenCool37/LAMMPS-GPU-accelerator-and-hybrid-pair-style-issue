@@ -1,0 +1,61 @@
+
+units real
+dimension 3
+echo screen
+boundary p p p
+
+atom_style full
+bond_style harmonic
+angle_style harmonic
+
+
+*****************************************
+**                                     **
+**                                     **
+**                                     **
+**      Variable info                  **
+**                                     **
+**                                     **
+**                                     **
+*****************************************
+
+
+read_data XXXXXXXXXXXXXXXX.data
+
+
+
+pair_style hybrid lj/cut/tip4p/long X X X X 0.XX 10.0 10.0 lj/cut/coul/long 10.0 10.0
+
+pair_modify tail yes
+
+*****************************************
+**                                     **
+**                                     **
+**                                     **
+**   Pair/angle/bond coeff info        **
+**                                     **
+**                                     **
+**                                     **
+*****************************************
+
+neighbor 2.0 bin
+neigh_modify delay 0 every 1 check yes
+
+timestep ${delta_T}
+velocity all create ${myT} XXXXXXX dist gaussian rot yes mom yes
+
+thermo_style custom step press temp ke pe 
+thermo ${thermo_rate}
+
+fix extra all print 100 "$S ${steps} $X $X $X $X $X $X $X" file XXXXXX.txt screen no title "step time press temp ke pe"
+fix 1 XXX rigid/nvt molecule temp ${myT} ${myT} ${Tdamp}
+fix 2 water shake 1.0e-4 XXX 0 b X a X
+fix 3 XXX npt temp ${myT} ${myT} ${Tdamp} iso ${myP} ${myP} ${Pdamp}
+fix 4 all recenter INIT INIT INIT shift all units box
+
+dump 1 all custom ${samp_rate} dump.XXXX_${nametag} id type x y z 
+dump_modify 1 element xx xx xx xx xx xx
+
+********************************************
+**                 Run                    **
+********************************************
